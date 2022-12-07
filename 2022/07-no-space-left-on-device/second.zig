@@ -51,17 +51,12 @@ fn solve(puzzle: []const u8, allocator: std.mem.Allocator) !u64 {
     }
     try sizes.append(stack.items[n]); // we do not forget the last one
     n = 30000000 - (70000000 - tot); // the amount of space we need to free
-    // let's run a dychotomy on the array
-    std.sort.sort(u64, sizes.items, {}, std.sort.asc(u64));
-    var a: usize = 0;
-    var b = sizes.items.len - 1;
-    while (b - a > 2) {
-        const m = a + (b - a) / 2;
-        if (sizes.items[m] < n) {
-            a = m;
-        } else {
-            b = m;
+    // let's find the minimum that is the closest to that
+    tot = 70000000;
+    for (sizes.items) |v| {
+        if (v > n and v < tot) {
+            tot = v;
         }
     }
-    return sizes.items[b];
+    return tot;
 }
