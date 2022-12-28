@@ -25,7 +25,7 @@ export class PriorityQueue {
 		this.items.push(qElement);
 	}
 	dequeue() {
-		return this.items.shift(); // pop highest priority, use shift() for lower priority
+		return this.items.pop(); // pop highest priority, use shift() for lower priority
 	}
 	front() {
 		return this.items[0];

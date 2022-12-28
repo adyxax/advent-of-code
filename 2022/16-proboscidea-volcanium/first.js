@@ -18,8 +18,7 @@ fs.readFileSync("input", "utf8")
 			rate: a[2],
 			computePathCostTo: function (target) {
 				Object.values(valves).forEach(v => v.cost = 0);
-				let nq = new PriorityQueue();
-				nq.enqueue(this, 0);
+				let nq = new PriorityQueue(this);
 				while (true) {
 					let n = nq.dequeue();
 					if (n.element.label === target) {

@@ -28,7 +28,7 @@ function solve(input) {
 		let [x, y, z] = line.split(",").map(n => parseInt(n));
 		min = Math.min(min, x, y, z);
 		max = Math.max(max, x, y, z);
-	})
+	});
 	min -=1;
 	max +=1;
 	// start with an edge and fill up the space
@@ -40,7 +40,7 @@ function solve(input) {
 		const eltstr = elt.join(",");
 		const [x, y, z] = elt;
 		if (x < min || x > max || y < min || y > max || z < min || z > max) continue;
-		if (visited.has(eltstr)) continue
+		if (visited.has(eltstr)) continue;
 		if (input.includes(eltstr)) continue;
 		visited.add(eltstr);
 		count += countSides(x, y, z, input);
