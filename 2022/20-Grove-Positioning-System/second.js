@@ -65,9 +65,9 @@ class File {
 function load(filename) {
 	return new File(
 		fs.readFileSync(filename, "utf8")
-		.trim()
-		.split("\n")
-		.map(line => parseInt(line))
+			.trim()
+			.split("\n")
+			.map(line => parseInt(line))
 	);
 }
 
