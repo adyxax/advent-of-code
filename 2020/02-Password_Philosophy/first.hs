@@ -25,15 +25,12 @@ parseRule = do
   void (char ' ')
   e <- anySingle
   void (string ": ")
-  pass <- (many letterChar)
+  pass <- (some letterChar)
   void (char '\n')
   return Rule { lower = read l, higher = read h, elt = e, pass = pass }
 
 parseRules :: Parser [Rule]
-parseRules = do
-  rules <- many parseRule
-  eof
-  return rules
+parseRules = some parseRule <* eof
 
 parseInput :: String -> IO [Rule]
 parseInput filename = do
