@@ -30,7 +30,7 @@ parseBP = do
   return $ row * 8 + column
 
 parseBPs :: Parser [BoardingPass]
-parseBPs = some (parseBP) <* eof
+parseBPs = some parseBP <* eof
 
 parseInput :: String -> IO [BoardingPass]
 parseInput filename = do

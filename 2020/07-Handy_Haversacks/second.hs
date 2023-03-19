@@ -75,6 +75,6 @@ main = do
   when  (exampleOutput /= exampleExpectedOutput)  (die $ "example failed: got " ++ show exampleOutput ++ " instead of " ++ show exampleExpectedOutput)
   example2 <- parseInput "example2"
   let exampleOutput2 = compute example2
-  when  (exampleOutput2 /= exampleExpectedOutput2)  (die $ "example2 failed: got " ++ show exampleOutput ++ " instead of " ++ show exampleExpectedOutput)
+  when  (exampleOutput2 /= exampleExpectedOutput2)  (die $ "example2 failed: got " ++ show exampleOutput2 ++ " instead of " ++ show exampleExpectedOutput2)
   input <- parseInput "input"
   print $ compute input
