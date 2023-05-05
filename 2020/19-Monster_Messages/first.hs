@@ -3,7 +3,6 @@ module Main (main) where
 import Control.Monad (void, when)
 import Data.Either
 import Data.List (foldl')
-import Data.Maybe (isJust)
 import Data.Map qualified as M
 import Data.Void (Void)
 import Text.Megaparsec
@@ -70,11 +69,12 @@ compute (Input rules messages) = length . filter id $ map isValid messages
       Just "" -> True
       otherwise -> False
     matches :: RuleID -> Message -> Maybe Message
+    matches _ [] = Nothing
     matches ruleId msg = case rules M.! ruleId of
       Left c -> if head msg == c then (Just $ tail msg) else Nothing
       Right actions -> case map (processAction msg) actions of
-        Nothing:a:_ -> a
-        a:_ -> a
+        Just a:_ -> Just a
+        Nothing:Just a:_ -> Just a
         otherwise -> Nothing
     processAction :: Message -> Action -> Maybe Message
     processAction msg action = foldl' step (Just msg) action
