@@ -10,10 +10,11 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import System.Exit (die)
 
-exampleExpectedOutput = 67384529
+exampleExpectedOutput = 149245887792
 
 type Cup = Int
 type Input = [Cup]
+type Input' = M.Map Cup Cup
 
 type Parser = Parsec Void String
 
@@ -32,29 +33,35 @@ parseInput filename = do
     Left bundle -> die $ errorBundlePretty bundle
     Right input' -> return input'
 
-score :: Input -> Int
-score (0:xs) = read . concat $ map (\i -> show (i+1)) xs
-score (x:xs) = score $ xs ++ [x]
-
-compute' :: Input -> Int -> Int
-compute' input 0 = score input
-compute' (current:one:two:three:xs) remainingMoves = compute' step (remainingMoves - 1)
+score :: Input' -> Int
+score input = (one + 1) * (two + 1)
   where
-    l = length xs + 4
-    destinationIndex :: Int
-    destinationIndex = case L.elemIndex ((current - 1) `mod` l) xs of
-      Just i -> i
-      Nothing -> case L.elemIndex ((current - 2) `mod` l) xs of
-        Just i -> i
-        Nothing -> case L.elemIndex ((current - 3) `mod` l) xs of
-          Just i -> i
-          Nothing -> fromJust $ L.elemIndex ((current - 4) `mod` l) xs
-    destinationIndex' = destinationIndex + 1
-    step :: Input
-    step = concat [take destinationIndex' xs, [one, two, three], drop destinationIndex' xs, [current]]
+    one = input M.! 0
+    two = input M.! one
+
+compute' :: Cup -> Input' -> Int -> Int
+compute' _ input 0 = score input
+compute' current input remainingMoves = compute' next step (remainingMoves - 1)
+  where
+    one = input M.! current
+    two = input M.! one
+    three = input M.! two
+    next = input M.! three
+    cups = [one, two, three]
+    mone = (current - 1) `mod` 1_000_000
+    mtwo = (current - 2) `mod` 1_000_000
+    mthree = (current - 3) `mod` 1_000_000
+    mfour = (current - 4) `mod` 1_000_000
+    destination :: Int
+    destination = if L.elem mone cups then (if L.elem mtwo cups then (if L.elem mthree cups then mfour else mthree) else mtwo) else mone
+    afterDestination = input M.! destination
+    step :: Input'
+    step = M.insert current next $ M.insert destination one $ M.insert three afterDestination input
 
 compute :: Input -> Int
-compute input = compute' input 100
+compute input = compute' (head input) input' 10_000_000
+  where
+    input' = M.fromList (zip input (tail input) ++ [(last input, 9)] ++ (zip [9..999_998] [10..999_999]) ++ [(999_999, head input)])
 
 main :: IO ()
 main = do
