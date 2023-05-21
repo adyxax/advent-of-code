@@ -1,32 +1,34 @@
--- requires cabal install --lib megaparsec parser-combinators
+{-# LANGUAGE DataKinds #-}
+-- requires cabal install --lib megaparsec parser-combinators mod
 module Main (main) where
 import Control.Monad (void, when)
 import Data.List qualified as L
 import Data.Map qualified as M
 import Data.Maybe (fromJust)
+import Data.Mod
 import Data.Set qualified as S
 import Data.Void (Void)
-import Math.NumberTheory.Powers.Modular
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import System.Exit (die)
 
 exampleExpectedOutput = 14897079
 
-type Input = (Integer, Integer)
+type I = Mod 20201227
+type Input = (I, I)
 
 type Parser = Parsec Void String
 
-parseInteger :: Parser Integer
-parseInteger = do
+parseInt :: Parser (I)
+parseInt = do
   n <- some digitChar
   void $ optional (char '\n')
   return $ read n
 
 parseInput' :: Parser Input
 parseInput' = do
-  a <- parseInteger
-  b <- parseInteger
+  a <- parseInt
+  b <- parseInt
   void eof
   return (a, b)
 
@@ -37,10 +39,10 @@ parseInput filename = do
     Left bundle -> die $ errorBundlePretty bundle
     Right input' -> return input'
 
-transform :: Integer -> Int -> Integer
-transform subjectNum loopSize = powMod subjectNum loopSize 20201227
+transform :: I -> Int -> I
+transform subjectNum loopSize = subjectNum ^% loopSize
 
-compute :: Input -> Integer
+compute :: Input -> I
 compute (cardPubKey, doorPubKey) = encryptionKey
   where
     cardLoopSize = fromJust . L.elemIndex cardPubKey $ map (transform 7) [0..]
@@ -52,6 +54,5 @@ main = do
   example <- parseInput "example"
   let exampleOutput = compute example
   when  (exampleOutput /= exampleExpectedOutput)  (die $ "example failed: got " ++ show exampleOutput ++ " instead of " ++ show exampleExpectedOutput)
-  print "OK"
   input <- parseInput "input"
   print $ compute input
