@@ -1,3 +1,7 @@
 zig-cache
 node_modules
 package-lock.json
+*.hi
+*.o
+first
+second
