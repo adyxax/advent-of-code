@@ -21,12 +21,12 @@ type Parser = Parsec Void String
 
 parseMapLine :: Parser Line
 parseMapLine = do
-  line <- some (char '.' <|> char ' ' <|> char '#') <* char '\n'
+  line <- some (char '.' <|> char ' ' <|> char '#') <* eol
   return $ V.generate (length line) (line !!)
 
 parseMap :: Parser Map
 parseMap = do
-  lines <- some parseMapLine <* char '\n'
+  lines <- some parseMapLine <* eol
   return $ V.generate (length lines) (lines !!)
 
 parseInstruction :: Parser Instruction
@@ -35,11 +35,8 @@ parseInstruction = (Move . read <$> some digitChar)
                <|> (char 'R' $> R)
 
 parseInput' :: Parser Input
-parseInput' = do
-  m <- parseMap
-  i <- some parseInstruction
-  void $ optional (char '\n') <* eof
-  return $ Input m i
+parseInput' = Input <$> parseMap
+                    <*> some parseInstruction <* eol <* eof
 
 parseInput :: String -> IO Input
 parseInput filename = do
