@@ -19,8 +19,6 @@ import           Text.Megaparsec.Char
 
 import           Debug.Trace
 
-exampleExpectedOutput = 32000000
-example2ExpectedOutput = 11687500
 data Pulse = Low | High deriving (Eq, Show)
 data Module = Normal | FlipFlop Bool | Conjunction (M.Map String Pulse) | Broadcaster deriving (Eq, Show)
 data Configuration = Configuration Module String [String] deriving (Eq, Show)
@@ -54,15 +52,16 @@ parseInput filename = do
     Right input' -> return input'
 
 compute :: Input -> Int
-compute input = let (x, y) = computeX 1000 (0, 0) $ initConjuctions input in x * y
+compute input = L.foldl' lcm 1 $ computeX 0 (take (length targets) $ repeat Nothing) $ initConjuctions input
   where
-    computeX :: Int -> (Int, Int) -> Input -> (Int, Int)
-    computeX 0 n _ = n
-    computeX i n input = let (n', input') = compute' (1, 0) [("button", Low, "broadcaster")] input
-                         in computeX (i-1) (scoreAdd n n') input'
-    compute' :: (Int, Int) -> [(String, Pulse, String)] -> Input -> ((Int, Int), Input)
-    compute' n signals input | length stepAll == 0 = (n, input)
-                             | otherwise = compute' (scoreAdd n $ score stepAll) stepAll alterAll
+    computeX :: Int -> [Maybe Int] -> Input -> [Int]
+    computeX i acc input | all isJust acc = fromJust <$> acc
+                         | otherwise = let (acc', input') = compute' [("button", Low, "broadcaster")] i acc input
+                                       in computeX (i+1) acc' input'
+    compute' :: [(String, Pulse, String)] -> Int -> [Maybe Int] -> Input -> ([Maybe Int], Input)
+    compute' signals i acc input | length stepAll == 0 = (acc, input)
+                                 | otherwise = let acc' = map (accStep i stepAll) $ L.zip targets acc
+                                               in compute' stepAll i acc' alterAll
       where
         alterAll :: Input
         alterAll = L.foldl' alterOne input signals
@@ -76,11 +75,6 @@ compute input = let (x, y) = computeX 1000 (0, 0) $ initConjuctions input in x *
         alter p    prev me input (Just (Conjunction m, l))  = M.insert me (Conjunction $ M.insert prev p m, l) input
         alter p    _    _  input (Just (Broadcaster, l))    = input
         alter _    _    _  input Nothing                    = input
-        score :: [(String, Pulse, String)] -> (Int, Int)
-        score = L.foldl' scoreOne (0, 0)
-        scoreOne :: (Int, Int) -> (String, Pulse, String) -> (Int, Int)
-        scoreOne (x, y) (_, Low, _)  = (x + 1, y)
-        scoreOne (x, y) (_, High, _) = (x, y + 1)
         stepAll :: [(String, Pulse, String)]
         stepAll = L.foldl' stepOne [] signals
         stepOne :: [(String, Pulse, String)] -> (String, Pulse, String) -> [(String, Pulse, String)]
@@ -103,17 +97,23 @@ compute input = let (x, y) = computeX 1000 (0, 0) $ initConjuctions input in x *
         initOne input s = case M.lookup s input of
           Just (Conjunction m, l) -> M.insert s (Conjunction (M.insert c Low m), l) input
           _ -> input
-    scoreAdd (x, y) (x', y') = (x + x', y + y')
     set :: String -> Pulse -> String -> (String, Pulse, String)
     set me p s = (me, p, s)
+    targets = pointsTo toRx
+    [toRx] = pointsTo "rx"
+    pointsTo :: String -> [String]
+    pointsTo name = L.foldl' (\acc (k, (_, l)) -> if isJust (L.elemIndex name l) then k:acc else acc) [] $ M.assocs input
+    accStep :: Int -> [(String, Pulse, String)] -> (String, Maybe Int) -> Maybe Int
+    accStep _ _ (_, Just x) = Just x
+    accStep i stepAll (t, Nothing) | triggered = Just (i + 1)
+                                   | otherwise = Nothing
+      where
+        triggered = L.foldl' (trigg t) False stepAll
+        trigg _ True _            = True
+        trigg t False (_, Low, u) = t == u
+        trigg _ _ _               = False
 
 main :: IO ()
 main = do
-  example <- parseInput "example"
-  let exampleOutput = compute example
-  when  (exampleOutput /= exampleExpectedOutput)  (error $ "example failed: got " ++ show exampleOutput ++ " instead of " ++ show exampleExpectedOutput)
-  example2 <- parseInput "example2"
-  let example2Output = compute example2
-  when  (example2Output /= example2ExpectedOutput)  (error $ "example2 failed: got " ++ show example2Output ++ " instead of " ++ show example2ExpectedOutput)
   input <- parseInput "input"
   print $ compute input
