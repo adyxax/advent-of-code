@@ -1,5 +1,5 @@
 ! Copyright (C) 2024 Julien (adyxax) Dessaux.
-! See https://factorcode.org/license.txt for BSD license.
+! See https://git.adyxax.org/adyxax/advent-of-code/tree/LICENSE for EUPL license.
 USING: tools.test aoc.2024.02.private ;
 IN: aoc.2024.02.tests
 

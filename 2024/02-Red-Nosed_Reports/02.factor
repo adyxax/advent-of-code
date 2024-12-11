@@ -1,5 +1,5 @@
 ! Copyright (C) 2024 Julien (adyxax) Dessaux.
-! See https://factorcode.org/license.txt for BSD license.
+! See https://git.adyxax.org/adyxax/advent-of-code/tree/LICENSE for EUPL license.
 USING: combinators.short-circuit.smart grouping io io.encodings.utf8 io.files
 kernel math math.order math.parser prettyprint sequences splitting ;
 IN: aoc.2024.02
