@@ -1,7 +1,7 @@
 ! Copyright (C) 2024 Julien (adyxax) Dessaux.
 ! See https://git.adyxax.org/adyxax/advent-of-code/tree/LICENSE for EUPL license.
-USING: accessors io.encodings.utf8 io.files kernel make math math.parser peg
-peg.parsers prettyprint regexp sequences ;
+USING: accessors io.encodings.utf8 io.files kernel make math math.parser
+multiline peg peg.ebnf peg.parsers prettyprint regexp sequences ;
 IN: aoc.2024.03
 
 <PRIVATE
@@ -85,10 +85,29 @@ PEG: parse_input ( string -- ast )
     [ compute ] each
     total>> ;
 
+! ----- part2 again with an EBNF parser this time ------------------------------
+
+EBNF: parse_grammar [=[
+    number=[0-9]+ => [[ string>number ]]
+    mul = "mul("~ number:a ","~ number:b ")"~ => [[ a b mul boa ]]
+    dontblock = "don't()" (!("do()") .)* "do()" => [[ nop boa ]]
+    ignore = .~ => [[ nop boa ]]
+    program=(dontblock|mul|ignore)+
+]=]
+
+: part2bis ( filename -- n )
+    load_input
+    parse_grammar
+    0 t computer boa
+    swap
+    [ compute ] each
+    total>> ;
+
 PRIVATE>
 
 : aoc202403 ( -- )
     "input" part1 .
-    "input" part2 . ;
+    "input" part2 .
+    "input" part2bis . ;
 
 MAIN: aoc202403
