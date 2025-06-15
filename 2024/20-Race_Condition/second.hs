@@ -13,7 +13,7 @@ import           Text.Megaparsec.Char
 
 import           Debug.Trace
 
-exampleExpectedOutput = 5
+exampleExpectedOutput = 3
 
 data Tile = Wall | Floor | Start | End deriving (Eq, Show)
 type Line = V.Vector Tile
@@ -56,7 +56,7 @@ compute input minGain = findAllShortcut
     findShortcutFrom :: Coord -> Int -> Int -> Int
     findShortcutFrom (x, y) c acc = M.foldrWithKey validShortcut acc candidates
       where
-        candidates = M.filterWithKey (\(x', y') _ -> (abs $ x - x') + (abs $ y - y') <= 2) costs
+        candidates = M.filterWithKey (\(x', y') _ -> (abs $ x - x') + (abs $ y - y') <= 20) costs
         validShortcut :: Coord -> Int -> Int -> Int
         validShortcut (x', y') c' acc' = let gain = c' - c - (abs $ x - x') - (abs $ y - y')
                                          in if gain >= minGain then acc' + 1 else acc'
@@ -78,7 +78,9 @@ compute input minGain = findAllShortcut
 main :: IO ()
 main = do
   example <- parseInput "example"
-  let exampleOutput = compute example 20
+  let exampleOutput = compute example 76
   when  (exampleOutput /= exampleExpectedOutput)  (error $ "example failed: got " ++ show exampleOutput ++ " instead of " ++ show exampleExpectedOutput)
+  let exampleOutput2 = compute example 74
+  when  (exampleOutput2 /= 7)  (error $ "example2 failed: got " ++ show exampleOutput2 ++ " instead of " ++ show 7)
   input <- parseInput "input"
   print $ compute input 100
