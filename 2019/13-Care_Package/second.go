@@ -84,5 +84,4 @@ func compute2(filename string) error {
 		}
 	}
 	fmt.Printf("%d\n", score)
-	return fmt.Errorf("not implemented")
 }
